@@ -1,0 +1,9 @@
+body { 
+    background-color: #111; color: #fff; font-family: sans-serif; font-size: 14px; 
+}
+a { text-decoration: none; font-weight: bold; color: #ff8; }
+body { color: #AAA; }
+#term { background-color: #AAA; }
+pre {
+    font-family: Droid Sans Mono, DejaVu Sans Mono, Consolas, Lucida Console, Monospace;
+}
