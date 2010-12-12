@@ -14,9 +14,7 @@ INSTALLATION
 
 2. Edit the "weevil" script to correspond to the location of your Python interpreter, and the "weevil.py" program.
 
-3. Install the "pygments" module for Python. (pip install pygments)
-
-4. Optionally, install the "magic" module for Python. (Hides binary files.)
+3. Optionally, install the "magic" module for Python. (Hides binary files.)
 
 -----
 USAGE
