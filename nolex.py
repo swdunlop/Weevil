@@ -112,7 +112,7 @@ class c_lang( lang ):
         ( comment, '/\\*.*?\\*/' ),
         ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
         ( string,  "'(\\\\\\\\|\\\\'|.)*?'" ),
-        ( symbol,  '[a-zA-Z_][a-zA-Z0-9_]+' ),
+        ( symbol,  '[a-zA-Z_][a-zA-Z0-9_]*' ),
         ( eol,     '\r?\n' ),
         ( preproc, '^#[^\r\n]*' ),
     )
@@ -139,7 +139,7 @@ class java_lang( c_lang ):
         ( comment, '/\\*.*?\\*/' ),
         ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
         ( string,  "'(\\\\\\\\|\\\\'|.)*?'" ),
-        ( symbol,  '[a-zA-Z_][a-zA-Z0-9_]+' ),
+        ( symbol,  '[a-zA-Z_][a-zA-Z0-9_]*' ),
         ( eol,     '\r?\n' ),
     )
     
@@ -174,7 +174,7 @@ class py_lang( lang ):
         ( string,  '"""(\\\\\\\\|\\\\"|.)*?"""' ),
         ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
         ( string,  "'(\\\\\\\\|\\\\'|.)*?'" ),
-        ( symbol,  '[a-zA-Z_][a-zA-Z0-9_]+' ),
+        ( symbol,  '[$a-zA-Z_][$a-zA-Z0-9_]*' ),
         ( eol,     '\r?\n' ),
     )
 
