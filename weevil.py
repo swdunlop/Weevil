@@ -17,18 +17,14 @@
 ### USA.
 
 
-## DEPENDENCIES: bottle, pygments
-
 #TODO: Soft-wrap plugin.
 #TODO: On keypress "'" in a file, open nearest file with that name.
+#TODO: Highlighting a token causes shadows on identical tokens throughout.
 #TODO: Nearest is defined as "ascend, then recursively ascend."
 #TODO: "?" tab leads to shortcut bar.
 
 import os, os.path, cgi, re, codecs
-import bottle 
-import pygments, pygments.lexers, pygments.formatters, pygments.styles
-
-import wasp_lexer, ddx_lexer
+import bottle, nolex
 
 #################################################################### Shared Data
 _setup_complete = False
@@ -208,47 +204,34 @@ def view_dir( req, path ):
     crumbs = gen_title( req )
     return bottle.template( 'view_dir', crumbs=crumbs, path=req, entries=entries )
 
-def determine_lexer( path, data ):
-    name = os.path.basename( path ).lower()
-    
-    # Yeah, not entirely kosher, but that LEXER crap is scary.
-    if name.endswith( ".ms" ):
-        return wasp_lexer.WaspLexer( )
-    elif name.endswith( ".ddx" ):
-        return ddx_lexer.DdxLexer( )
+from cStringIO import StringIO
 
-    try:
-        return pygments.lexers.get_lexer_for_filename( name )
-    except:
-        pass
-
-    try:
-        return pygments.lexers.guess_lexer_for_filename( name )
-    except:
-        pass
-
-    try:
-        return pygments.lexers.guess_lexer( data )
-    except:
-        # Looks like there's no lexer for this, use raw text.
-        return pygments.lexers.TextLexer( )
+def gen_linenos( data ):
+    ct = data.count( '\n' )
+    out = StringIO( )
+    for i in range( 1, ct+1 ):
+        out.write( '<a name="%s">%5s</a>\n' % ( i, i ) )
+    return out.getvalue( )
 
 def view_file( req, path ):
-    data = codecs.open( path, 'r', encoding='utf-8', errors='ignore' ).read( )
+    ext = os.path.splitext( path )[-1]
 
     try:
-        print None
+        data = codecs.open( 
+            path, 'r', encoding='utf-8', errors='ignore' 
+        ).read( )
     except:
         bottle.abort( 
             403, 'Inscrutable file must contain secret herbs and spices.' 
         )
     
-    lexer = determine_lexer( path, data )
-    formatter = pygments.formatters.HtmlFormatter( linenos=True )
-    result = pygments.highlight( data, lexer, formatter )
+    result = nolex.by_ext( ext ).parse( data )
 
     crumbs = gen_title( req )
-    return bottle.template( 'view_file', crumbs=crumbs, path=req, data=result )
+    return bottle.template( 
+        'view_file', crumbs=crumbs, path=req, nos=gen_linenos( result ),       
+        data=result 
+    )
 
 def search_tree( req, path, expr ):
     if not expr:

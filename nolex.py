@@ -1,4 +1,27 @@
 #!/usr/bin/env python
+### Copyright (C) 2010 IOActive, Inc.
+### 
+### This program is free software; you can redistribute it and/or
+### modify it under the terms of the GNU General Public License
+### as published by the Free Software Foundation, version 2
+### of the License.
+### 
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+### 
+### You should have received a copy of the GNU General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+### USA.
+
+'''
+nolex is an allergic reaction to pygments and other syntax highlighters that
+get entirely too deep in the syntax of the file to be reliable and
+understandable.  nolex serves the needs of weevil to hunt down non-keyword
+symbols for the purposes of correlation, then gets out of the way.
+'''
 
 import sys, re, cgi, os.path
 from cStringIO import StringIO
@@ -110,6 +133,40 @@ class c_lang( lang ):
         "pascal", "typeof"
     )
 
+class java_lang( c_lang ):
+    RULES = (
+        ( comment, '//[^\r\n]*' ),
+        ( comment, '/\\*.*?\\*/' ),
+        ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
+        ( string,  "'(\\\\\\\\|\\\\'|.)*?'" ),
+        ( symbol,  '[a-zA-Z_][a-zA-Z0-9_]+' ),
+        ( eol,     '\r?\n' ),
+    )
+    
+    # As per Wikipedia, 2010/12/11
+    KEYWORDS = (
+       "abstract", "assert", "boolean", "break", "byte", "case", "catch",
+       "char", "class", "const", "continue", "default", "do", "double",
+       "else", "enum", "extends", "final", "finally", "float", "for", "if",
+       "goto", "implements", "import", "instanceof", "int", "interface",
+       "long", "native", "new", "package", "private", "protected", "public",
+       "return", "short", "static", "strictfp", "super", "switch",
+       "synchronized", "this", "throw", "throws", "transient", "try", "void",
+       "volatile", "while",
+    )
+
+class ecma_lang( java_lang ):
+    # Don't call it JavaScript..
+    #TODO: Support regex literals.
+    
+    # As per Wikipedia, 2010/12/11
+    KEYWORDS = (
+        "break", "else", "new", "var", "case", "finally", "return", 
+        "void", "catch", "for", "switch", "while", "continue", "function", 
+        "this", "with", "default", "if", "throw", "delete", "in", "try", 
+        "do", "instanceof", "typeof"
+    )
+
 class py_lang( lang ):
     RULES = (
         ( comment, '#[^\r\n]+?\r?\n' ),
@@ -143,6 +200,7 @@ def register_mime( lang, *mimes ):
         BY_MIME[mime.lower( )] = lang
 
 def by_ext( ext, default = text ):
+    if not ext.startswith( '.' ): ext = '.' + ext
     return BY_EXT.get( ext.lower( ), default )( )
 
 def by_mime( mime, default = text ):
@@ -150,58 +208,12 @@ def by_mime( mime, default = text ):
 
 register_ext( c_lang, 'c', 'h', 'cc', 'cpp', 'hpp', 'cxx' )
 register_ext( py_lang, 'py' )
+register_ext( java_lang, 'java' )
+register_ext( ecma_lang, 'js' )
 
 def parse_file( path ):
     return by_ext( os.path.splitext( path )[-1] ).parse( open( path ).read( ) )
 
-js = ''' <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'></script><script>$( function( ){
-
-    function mouseover_sym( evt ){
-        var sym = $( evt.target ).text( )
-        console.log( "Mouse Enter: " + sym )
-        console.log( $( ".x-" + sym ).addClass( "mark" ) )
-    };
-
-    function mouseleave_sym( evt ){
-        var sym = $( evt.target ).text( )
-        console.log( "Mouse Leave: " + sym )
-        console.log( $( ".x-" + sym ).removeClass( "mark" ) )
-    };
-
-    $( ".sym" ).mouseover( mouseover_sym ).mouseleave( mouseleave_sym )
-    
-} )
-</script>'''
-
-css = '''<style>
-body {
-    color: #000;
-    background: #FFF;
-}
-pre {
-    font-family: "droid sans mono", "andale mono", "bitstream vera sans mono", "lucida console", "courier new" !important;
-}
-.sym {
-}
-.mark {
-    text-decoration: underline;
-    background-color: #DDD;
-}
-.kw {
-    font-weight: bold;
-}
-.cmt {
-    font-style: italic;
-}
-.str {
-    color: #484800;
-}
-</style>'''
-
 if __name__ == '__main__':
-    data = parse_file( sys.argv[1] )
-    out = open( sys.argv[1] + '.html', 'w' )
-    out.write( '<html><head>' + js + css + '</head><pre>' )
-    out.write( data )
-    out.write( '</pre></html>' )
+    print parse_file( sys.argv[1] )
 

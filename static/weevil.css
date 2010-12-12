@@ -1,9 +1,30 @@
-body { 
-    background-color: #111; color: #fff; font-family: sans-serif; font-size: 14px; 
+body {
+    color: #000; background: #FFF; font-size: 14px; 
+    font-family: "droid sans", "bitstream vera sans", "trebuchet ms", "verdana", "helvetica", "sans";
 }
-a { text-decoration: none; font-weight: bold; color: #ff8; }
-body { color: #AAA; }
-#term { background-color: #AAA; }
 pre {
-    font-family: Droid Sans Mono, DejaVu Sans Mono, Consolas, Lucida Console, Monospace;
+    font-family: "droid sans mono", "andale mono", "bitstream vera sans mono", "lucida console", Monospace !important;
 }
+.sym {
+}
+.mark {
+    text-decoration: underline;
+    background-color: #DDD;
+}
+.kw {
+    font-weight: bold;
+}
+.cmt {
+    font-style: italic;
+}
+.str {
+    color: #484800;
+}
+
+a:link{ text-decoration: none; font-weight: bold; }
+#nos {
+    margin: 0; padding: 0; border: none;
+    margin-right: 1em;
+    background-color: #DDD;
+}
+
