@@ -133,6 +133,25 @@ class c_lang( lang ):
         "pascal", "typeof"
     )
 
+class cxx_lang( c_lang ):
+    KEYWORDS = (
+        # ANSI C++
+        "asm", "delete", "goto", "return", "typedef",
+        "auto", "do", "if", "short", "typeid",
+        "bad_cast", "double", "inline", "signed", "typename",
+        "bad_typeid", "dynamic_cast", "int", "sizeof", "union",
+        "bool", "else", "long", "static", "unsigned",
+        "break", "enum", "mutable", "static_cast", "using",
+        "case", "except", "namespace", "struct", "virtual",
+        "catch", "explicit", "new", "switch", "void",
+        "char", "extern", "operator", "template", "volatile",
+        "class", "false", "private", "this", "while",
+        "const", "finally", "protected", "throw", 
+        "const_cast", "float", "public", "true", 
+        "continue", "for", "register", "try"
+        "default", "friend", "reinterpret_cast", "type_info",
+    )
+
 class java_lang( c_lang ):
     RULES = (
         ( comment, '//[^\r\n]*' ),
@@ -206,7 +225,8 @@ def by_ext( ext, default = text ):
 def by_mime( mime, default = text ):
     return BY_MIME.get( mime.lower( ), default )( )
 
-register_ext( c_lang, 'c', 'h', 'cc', 'cpp', 'hpp', 'cxx' )
+register_ext( c_lang, 'c', 'h' )
+register_ext( cxx_lang, 'cc', 'cpp', 'hpp', 'cxx' )
 register_ext( py_lang, 'py' )
 register_ext( java_lang, 'java' )
 register_ext( ecma_lang, 'js' )
