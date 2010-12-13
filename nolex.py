@@ -23,8 +23,18 @@ understandable.  nolex serves the needs of weevil to hunt down non-keyword
 symbols for the purposes of correlation, then gets out of the way.
 '''
 
+### TODO: make parsers composable, such as css or js within html.
+### TODO: separate parser from formatter, so token seqs can be indexed.
+
 import sys, re, cgi, os.path, codecs
 from StringIO import StringIO
+
+### These two globals are used for handling embedded strings.
+rx_string = re.compile( '(["\'])(\\\\\\1|\\\\\\\\|.)*?\\1' )
+def fmt_string( m ):
+    c = m.group(1)
+    d = m.group(0)[1:-1]
+    return '%s<span class="str">%s</span>%s' % ( c, cgi.escape( d ), c )
 
 def comment( lang, str ): 
     return lang.comment( str )
@@ -38,6 +48,8 @@ def string( lang, str ):
     return lang.string( str )
 def space( lang, str ):
     return lang.space( str )
+def tag( lang, str ):
+    return lang.tag( str )
 
 class lang:
     RULES = []
@@ -59,7 +71,7 @@ class lang:
             for f, p in rules:
                 m = p.match( src, ofs )
                 if not m: continue
-                tok = cgi.escape( m.group( 0 ) ) 
+                tok = m.group( 0 ) #cgi.escape( m.group( 0 ) ) 
                 # NOTE: This should be done before parsing.
                 tok = tok.replace( '\t', '        ' )
                 tok.replace( ' ', '&nbsp;' )
@@ -78,12 +90,15 @@ class lang:
         return rule[0], re.compile( rule[ 1 ], self.FLAGS )
     
     def comment( self, str ):
+        str = cgi.escape( str )
         return '<span class="cmt">%s</span>' % ( str, )
     
     def keyword( self, str ):
+        str = cgi.escape( str )
         return '<span class="kw">%s</span>' % ( str, )
 
     def symbol( self, str ):
+        str = cgi.escape( str, True ) #Yes, we need to escape quotes.
         if str in self.keywords:
             return self.keyword( str )
         else:
@@ -93,12 +108,32 @@ class lang:
         return '\n' 
 
     def preproc( self, str ):
+        str = cgi.escape( str )
         return str
 
     def string( self, str ):
-        return '%s<span class="str">%s</span>%s' % (
-            str[0], str[1:-1], str[-1]
-        )
+        c = str[0]
+        str = cgi.escape( str[1:-1] )
+        #TODO: Looks a little ugly in Python with triple-quotes.
+        return '%s<span class="str">%s</span>%s' % ( c, str, c )
+
+    def tag( self, str ):
+        if str[1] == '/':
+            return '&lt;/<span class="kw">%s</span>&gt;' % (
+                cgi.escape( str[2:-1] ),
+            )
+
+        str = str[1:-1]
+        pts = str.split( None, 1 )
+        
+        if len( pts ) == 1:
+            return '&lt;<span class="kw">%s</span>&gt;' % (
+                cgi.escape( str ),
+            )
+        else:
+            return '&lt;<span class="kw">%s</span> %s&gt;' % (
+                cgi.escape( pts[0] ), rx_string.sub( fmt_string, pts[1] )
+            )
 
 class text( lang ):
     RULES = (
@@ -133,6 +168,21 @@ class c_lang( lang ):
         "pascal", "typeof"
     )
 
+class xml_lang( lang ):
+    RULES = (
+        ( comment, '<!-- -->' ),
+        ( comment, '<!.+?>' ),
+        ( string,  '<[CDATA[.*?]]>' ),
+        ( tag,     ( 
+            '<('
+            '([^>]+?)|'
+            '("[^"]+?")|'
+            "('[^']+?')"
+            ')*?>'
+        ) )
+    )
+    KEYWORDS = []
+    
 class cxx_lang( c_lang ):
     KEYWORDS = (
         # ANSI C++
@@ -257,6 +307,7 @@ register_ext( cs_lang, 'cs' )
 register_ext( py_lang, 'py' )
 register_ext( java_lang, 'java' )
 register_ext( ecma_lang, 'js' )
+register_ext( xml_lang, 'xml', 'html', 'xhtml', 'aspx', 'htm' )
 
 def open_file( path ):
     return codecs.open( 
