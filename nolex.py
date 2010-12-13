@@ -23,8 +23,8 @@ understandable.  nolex serves the needs of weevil to hunt down non-keyword
 symbols for the purposes of correlation, then gets out of the way.
 '''
 
-import sys, re, cgi, os.path
-from cStringIO import StringIO
+import sys, re, cgi, os.path, codecs
+from StringIO import StringIO
 
 def comment( lang, str ): 
     return lang.comment( str )
@@ -63,7 +63,7 @@ class lang:
                 # NOTE: This should be done before parsing.
                 tok = tok.replace( '\t', '        ' )
                 tok.replace( ' ', '&nbsp;' )
-                out.write( f( self, tok ) )
+                out.write( unicode( f( self, tok ) ) )
                 ofs = m.end( )
                 skip = False
                 break
@@ -174,6 +174,32 @@ class java_lang( c_lang ):
        "volatile", "while",
     )
 
+class cs_lang( c_lang ):
+    RULES = (
+        ( comment, '//[^\r\n]*' ),
+        ( comment, '/\\*.*?\\*/' ),
+        ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
+        ( string,  "'(\\\\\\\\|\\\\'|.)*?'" ),
+        ( symbol,  '[a-zA-Z_][a-zA-Z0-9_]*' ),
+        ( eol,     '\r?\n' ),
+    )
+    
+    # As per Wikipedia, 2010/12/11
+    KEYWORDS = (
+        "abstract", "event", "new", "struct", "assert", "explicit", "null",
+        "switch", "base", "extern", "object", "this", "boolean", "false",
+        "operator", "throw", "break", "finally", "out", "true", "byte",
+        "fixed", "override", "try", "case", "float", "params", "typeof",
+        "catch", "for", "private", "uint", "char", "foreach", "protected",
+        "ulong", "checked", "goto", "public", "unchecked", "class", "if",
+        "readonly", "unsafe", "const", "implicit", "ref", "ushort", "continue",
+        "in", "return", "using", "decimal", "int", "sbyte", "virtual",
+        "default", "interface", "sealed", "volatile", "delegate", "internal",
+        "short", "void", "double", "issizeof", "while", "double", "issizeof",
+        "while", "lock", "stackalloc ", "else", "long", "static ", "enum",
+        "name", "space", "string",
+    )
+
 class ecma_lang( java_lang ):
     # Don't call it JavaScript..
     #TODO: Support regex literals.
@@ -227,9 +253,15 @@ def by_mime( mime, default = text ):
 
 register_ext( c_lang, 'c', 'h' )
 register_ext( cxx_lang, 'cc', 'cpp', 'hpp', 'cxx' )
+register_ext( cs_lang, 'cs' )
 register_ext( py_lang, 'py' )
 register_ext( java_lang, 'java' )
 register_ext( ecma_lang, 'js' )
+
+def open_file( path ):
+    return codecs.open( 
+        path, 'r', encoding='utf-8', errors='ignore' 
+    )
 
 def parse_file( path ):
     return by_ext( os.path.splitext( path )[-1] ).parse( open( path ).read( ) )
