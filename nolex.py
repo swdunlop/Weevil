@@ -31,11 +31,19 @@ from StringIO import StringIO
 
 ### These two globals are used for handling embedded strings.
 rx_string = re.compile( '(["\'])(\\\\\\1|\\\\\\\\|.)*?\\1' )
+
 def fmt_string( m ):
     c = m.group(1)
     d = m.group(0)[1:-1]
     return '%s<span class="str">%s</span>%s' % ( c, cgi.escape( d ), c )
 
+rx_invalid_id = re.compile( '[:.;&$/-]' )
+    
+def fmt_ident( str ):
+    return rx_invalid_id.sub( '_', str )
+
+def constant( lang, str ):
+    return lang.constant( str )
 def comment( lang, str ): 
     return lang.comment( str )
 def symbol( lang, str ): 
@@ -50,6 +58,8 @@ def space( lang, str ):
     return lang.space( str )
 def tag( lang, str ):
     return lang.tag( str )
+def keyword( lang, str ):
+    return lang.keyword( str )
 
 class lang:
     RULES = []
@@ -89,6 +99,10 @@ class lang:
     def compile_rule( self, rule ):
         return rule[0], re.compile( rule[ 1 ], self.FLAGS )
     
+    def constant( self, str ):
+        str = cgi.escape( str )
+        return '<span class="con">%s</span>' % ( str, )
+
     def comment( self, str ):
         str = cgi.escape( str )
         return '<span class="cmt">%s</span>' % ( str, )
@@ -102,8 +116,10 @@ class lang:
         if str in self.keywords:
             return self.keyword( str )
         else:
-            return '<a class="sym x-%s">%s</a>' % ( str, str ) 
-
+            id = fmt_ident( str )
+            print ":: " + id
+            return '<a class="sym x-%s">%s</a>' % ( id, str ) 
+    
     def eol( self, str ):
         return '\n' 
 
@@ -143,6 +159,10 @@ class text( lang ):
 
 class c_lang( lang ):
     RULES = (
+        ( constant, '[0-9]+\\.[0-9]+' ),
+        ( constant, '0x[0-9A-Ba-b]+' ),
+        ( constant, '0b[01]+' ),
+        ( constant, '[0-9]+' ),
         ( comment, '//[^\r\n]*' ),
         ( comment, '/\\*.*?\\*/' ),
         ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
@@ -204,6 +224,10 @@ class cxx_lang( c_lang ):
 
 class java_lang( c_lang ):
     RULES = (
+        ( constant, '[0-9]+\\.[0-9]+' ),
+        ( constant, '0x[0-9A-Ba-b]+' ),
+        ( constant, '0b[01]+' ),
+        ( constant, '[0-9]+' ),
         ( comment, '//[^\r\n]*' ),
         ( comment, '/\\*.*?\\*/' ),
         ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
@@ -226,6 +250,10 @@ class java_lang( c_lang ):
 
 class cs_lang( c_lang ):
     RULES = (
+        ( constant, '[0-9]+\\.[0-9]+' ),
+        ( constant, '0x[0-9A-Ba-b]+' ),
+        ( constant, '0b[01]+' ),
+        ( constant, '[0-9]+' ),
         ( comment, '//[^\r\n]*' ),
         ( comment, '/\\*.*?\\*/' ),
         ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
@@ -264,6 +292,10 @@ class ecma_lang( java_lang ):
 
 class py_lang( lang ):
     RULES = (
+        ( constant, '[0-9]+\\.[0-9]+' ),
+        ( constant, '0x[0-9A-Ba-b]+' ),
+        ( constant, '0b[01]+' ),
+        ( constant, '[0-9]+' ),
         ( comment, '#[^\r\n]+?\r?\n' ),
         ( string,  "'''(\\\\\\\\|\\\\'|.)*?'''" ),
         ( string,  '"""(\\\\\\\\|\\\\"|.)*?"""' ),
@@ -280,7 +312,36 @@ class py_lang( lang ):
         'if', 'import', 'in', 'is', 'lambda', 'not', 'or', 'pass', 'print',
         'raise', 'return', 'try', 'while', 'with', 'yield'
     )
+
+class smali_lang( lang ):
+    RULES = (
+        ( constant, '[0-9]+\\.[0-9]+' ),
+        ( constant, '0x[0-9A-Ba-b]+' ),
+        ( constant, '0b[01]+' ),
+        ( constant, '[0-9]+' ),
+        ( keyword,  '\\.(method|end|annotation|implements|class|super|source|field|register|parameter)' ),
+        #( preproc, '\\..*?\r?\n' ),
+        ( comment, '\\#[^\r\n]+?\r?\n' ),
+        ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
+        ( symbol,  '[$a-zA-Z_.][$a-zA-Z0-9_/-]*' ),
+        ( symbol,  ':[a-zA-Z_]+' ),
+        ( eol,     '\r?\n' ),
+    )
     
+    KEYWORDS = (
+        # ".parameter", ".method", ".registers", ".prologue", ".line", ".field", 
+        # ".source", ".super", ".class", ".end", ".local", ".restart", 
+        
+        "new-array", "const/16", "move", "if-gt", "add-int/lit8", "aput-char",
+        "public", "private", "static",
+        "constructor", "sget-object", "add-int/lit8", "int-to-char", 
+        "goto", "sput-object", "const/4", "local", 
+        "invoke-direct", "invoke-virtual", "aget-char", "int-to-byte", 
+        "aput-byte", "return-void", "move-result-object", "invoke-static",
+        "return-object", "array-length", "rem-int/lit8", "if-ge", "iput",
+        "iput-object", "new-instance"
+    )
+   
 BY_EXT = {}
 BY_MIME = {}
 
@@ -308,6 +369,7 @@ register_ext( py_lang, 'py' )
 register_ext( java_lang, 'java' )
 register_ext( ecma_lang, 'js' )
 register_ext( xml_lang, 'xml', 'html', 'xhtml', 'aspx', 'htm' )
+register_ext( smali_lang, 'smali' )
 
 def open_file( path ):
     return codecs.open( 

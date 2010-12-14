@@ -13,14 +13,13 @@ $( function( ) {
     }
    */ 
     function mouseover_sym( evt ){
-        var sym = $( evt.target ).text( )
-        console.log( "Mouse Enter: " + sym )
-        $( ".x-" + sym ).addClass( "mark" )
+        var sym = $( evt.target ).attr( 'class' ).split( ' ' )[1]
+        $( "." + sym ).addClass( "mark" )
     };
 
     function mouseleave_sym( evt ){
-        var sym = $( evt.target ).text( )
-        $( ".x-" + sym ).removeClass( "mark" )
+        var sym = $( evt.target ).attr( 'class' ).split( ' ' )[1]
+        $( "." + sym ).removeClass( "mark" )
     };
 
     $( ".sym" ).mouseover( mouseover_sym ).mouseleave( mouseleave_sym )
