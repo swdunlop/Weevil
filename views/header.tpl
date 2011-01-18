@@ -1,6 +1,6 @@
 %stylesheets=[
 % '/s/dark-hive/jquery-ui-1.8.1.custom.css',
-% '/s/weevil.css',
+% '/s/dark.css',
 %]
 %libs = [
 % '/s/jquery/jquery-1.4.2.min.js',

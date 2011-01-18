@@ -1,6 +1,6 @@
 body {
-    color: #000; background: #FFF; font-size: 14px; 
-    font-family: "droid sans", "bitstream vera sans", "trebuchet ms", "verdana", "helvetica", "sans";
+    color: #cccccc; background: #000; font-size: 14px; 
+    font-family: "mono"
 }
 pre {
     font-family: "droid sans mono", "andale mono", "bitstream vera sans mono", "lucida console", Monospace !important;
@@ -9,22 +9,25 @@ pre {
 }
 .mark {
     text-decoration: underline;
-    background-color: #DDD;
+    background-color: #411;
 }
 .kw {
     font-weight: bold;
+    color: #ffffff;
 }
 .cmt {
     font-style: italic;
+    color: #aaa;
 }
 .str {
-    color: #484800;
+    color: #db2;
 }
 
-a:link{ text-decoration: none; font-weight: bold; }
+a:link{ text-decoration: none; font-weight: bold; color: #ff4444; }
+a:visited{ color: #db2; }
 #nos {
     margin: 0; padding: 0; border: none;
     margin-right: 1em;
-    background-color: #DDD;
+    background-color: #411;
 }
 

@@ -117,7 +117,6 @@ class lang:
             return self.keyword( str )
         else:
             id = fmt_ident( str )
-            print ":: " + id
             return '<a class="sym x-%s">%s</a>' % ( id, str ) 
     
     def eol( self, str ):
@@ -316,15 +315,15 @@ class py_lang( lang ):
 class smali_lang( lang ):
     RULES = (
         ( constant, '[0-9]+\\.[0-9]+' ),
-        ( constant, '0x[0-9A-Ba-b]+' ),
+        ( constant, '0x[0-9A-Fa-f]+' ),
         ( constant, '0b[01]+' ),
         ( constant, '[0-9]+' ),
-        ( keyword,  '\\.(method|end|annotation|implements|class|super|source|field|register|parameter)' ),
+        ( keyword,  '\\.(method|end|annotation|implements|class|super|source|field|registers|parameter|prologue|line)' ),
         #( preproc, '\\..*?\r?\n' ),
         ( comment, '\\#[^\r\n]+?\r?\n' ),
         ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
         ( symbol,  '[$a-zA-Z_.][$a-zA-Z0-9_/-]*' ),
-        ( symbol,  ':[a-zA-Z_]+' ),
+        #( symbol,  '[a-zA-Z_/0-9]+' ),
         ( eol,     '\r?\n' ),
     )
     
@@ -332,14 +331,17 @@ class smali_lang( lang ):
         # ".parameter", ".method", ".registers", ".prologue", ".line", ".field", 
         # ".source", ".super", ".class", ".end", ".local", ".restart", 
         
-        "new-array", "const/16", "move", "if-gt", "add-int/lit8", "aput-char",
-        "public", "private", "static",
+        "new-array", "const/16", "move", "if-gt", "add-int/lit8", 
+        "aput-char", "public", "private", "static",
         "constructor", "sget-object", "add-int/lit8", "int-to-char", 
         "goto", "sput-object", "const/4", "local", 
         "invoke-direct", "invoke-virtual", "aget-char", "int-to-byte", 
         "aput-byte", "return-void", "move-result-object", "invoke-static",
         "return-object", "array-length", "rem-int/lit8", "if-ge", "iput",
-        "iput-object", "new-instance"
+        "iput-object", "new-instance", "aput-object", "const-string",
+        "sput-boolean", "const", "invoke-interface", "synthetic",
+        "iget-wide", "return-wide", "iput-boolean", "iget-object", 
+        "iget-boolean", "final", "annotation", "field"
     )
    
 BY_EXT = {}
