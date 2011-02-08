@@ -38,6 +38,11 @@ shortcuts = {
         if( sel ) return submit_search( sel )
         return popup_search( )
     }, 
+    63 : function( ){ // "/"
+        var sel = get_selection( )
+        if( sel ) return submit_search( sel )
+        return popup_search( )
+    }, 
     46 : function( ){ // "."
         ascend_location( )
     }
@@ -53,7 +58,8 @@ $(function(){
     $(document).keypress( function( e ){ 
         var t = $(e.target)
         if( $(e.target).is( 'input' ) ) return true
-        fn = shortcuts[e.keyCode]
+        var c = e.keyCode || e.charCode
+        fn = shortcuts[c]
         if( fn ){ fn(); return false }
         return true
     } )

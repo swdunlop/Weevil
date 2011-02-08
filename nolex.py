@@ -344,6 +344,25 @@ class smali_lang( lang ):
         "iget-boolean", "final", "annotation", "field"
     )
    
+class php_lang( lang ):
+    RULES = (
+        ( constant, '[0-9]+\\.[0-9]+' ),
+        ( constant, '0x[0-9A-Ba-b]+' ),
+        ( constant, '0b[01]+' ),
+        ( constant, '[0-9]+' ),
+        ( comment, '#[^\r\n]+?\r?\n' ),
+        ( comment, '//[^\r\n]*' ),
+        ( comment, '/\\*.*?\\*/' ),
+        ( string,  "'''(\\\\\\\\|\\\\'|.)*?'''" ),
+        ( string,  '"""(\\\\\\\\|\\\\"|.)*?"""' ),
+        ( string,  '"(\\\\\\\\|\\\\"|.)*?"' ),
+        ( string,  "'(\\\\\\\\|\\\\'|.)*?'" ),
+        ( symbol,  '[$a-zA-Z_][$a-zA-Z0-9_]*' ),
+        ( eol,     '\r?\n' ),
+    )
+
+    KEYWORDS = ['if', 'else', 'require', 'while', 'for', 'foreach', 'return', 'function', 'class', 'var']
+
 BY_EXT = {}
 BY_MIME = {}
 
@@ -368,6 +387,7 @@ register_ext( c_lang, 'c', 'h' )
 register_ext( cxx_lang, 'cc', 'cpp', 'hpp', 'cxx' )
 register_ext( cs_lang, 'cs' )
 register_ext( py_lang, 'py' )
+register_ext( php_lang, 'php' )
 register_ext( java_lang, 'java' )
 register_ext( ecma_lang, 'js' )
 register_ext( xml_lang, 'xml', 'html', 'xhtml', 'aspx', 'htm' )
@@ -383,4 +403,3 @@ def parse_file( path ):
 
 if __name__ == '__main__':
     print parse_file( sys.argv[1] )
-
