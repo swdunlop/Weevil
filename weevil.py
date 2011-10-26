@@ -38,6 +38,8 @@ if not _setup_complete:
     
     try:
         import magic
+        if not hasattr(magic, 'from_file'):
+            magic = None
     except:
         magic = None
 
